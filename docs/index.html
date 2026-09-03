@@ -16,18 +16,27 @@
 <body>
 
 <header class="topbar">
-  <img class="topbar__icon" src="icons/icon-192.png" alt="" />
+  <button id="menuBtn" class="topbar__iconbtn" title="Menú" aria-haspopup="true" aria-label="Menú">
+    <img class="topbar__icon" src="icons/icon-192.png" alt="" />
+  </button>
   <div class="topbar__titles">
     <h1 class="topbar__title">Eisenhower Matrix</h1>
     <span id="fileLabel" class="topbar__file">Datos de este dispositivo</span>
   </div>
   <div class="topbar__actions">
-    <button id="importBtn" class="iconbtn iconbtn--wide" title="Abrir un archivo tasks.json">Abrir archivo</button>
     <button id="exportBtn" class="iconbtn" title="Exportar JSON" aria-label="Exportar">⬇</button>
-    <button id="deletedBtn" class="iconbtn iconbtn--wide" title="Historial de borrados">Borradas</button>
   </div>
   <input id="importFile" type="file" accept="application/json" hidden />
 </header>
+
+<!-- Main menu (opened by tapping the app icon) -->
+<dialog id="menuSheet" class="sheet">
+  <div class="sheet__title">Menú</div>
+  <button class="sheet__item" data-menu="open-file">Abrir archivo</button>
+  <button class="sheet__item" data-menu="deleted"><span id="menuDeletedLabel">Borradas</span></button>
+  <div class="sheet__sep"></div>
+  <button class="sheet__item sheet__item--cancel" data-menu="cancel">Cancelar</button>
+</dialog>
 
 <form id="addForm" class="input-card" autocomplete="off">
   <input id="taskInput" class="text-input" type="text" placeholder="¿Qué hay que hacer?" required />

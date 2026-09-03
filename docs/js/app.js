@@ -399,13 +399,18 @@ document.querySelectorAll('[data-close]').forEach((btn) => {
 
 /* ── Deleted history ───────────────────────────────────────────────── */
 
-const deletedBtn = document.getElementById('deletedBtn');
+const menuDeletedLabel = document.getElementById('menuDeletedLabel');
 const deletedDialog = document.getElementById('deletedDialog');
 const deletedList = document.getElementById('deletedList');
 
 function updateDeletedButton() {
   const n = state.deleted_history.length;
-  deletedBtn.textContent = n ? `Borradas (${n})` : 'Borradas';
+  menuDeletedLabel.textContent = n ? `Borradas (${n})` : 'Borradas';
+}
+
+function openDeletedDialog() {
+  renderDeletedList();
+  deletedDialog.showModal();
 }
 
 function renderDeletedList() {
@@ -445,9 +450,19 @@ deletedList.addEventListener('click', (e) => {
   renderDeletedList();
 });
 
-deletedBtn.addEventListener('click', () => {
-  renderDeletedList();
-  deletedDialog.showModal();
+/* ── Main menu (opened by tapping the app icon) ───────────────────── */
+
+const menuBtn = document.getElementById('menuBtn');
+const menuSheet = document.getElementById('menuSheet');
+
+menuBtn.addEventListener('click', () => menuSheet.showModal());
+menuSheet.addEventListener('cancel', () => menuSheet.close()); // hardware back / ESC
+menuSheet.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-menu]');
+  if (!btn) return;
+  menuSheet.close();
+  if (btn.dataset.menu === 'open-file') importFile.click();
+  else if (btn.dataset.menu === 'deleted') openDeletedDialog();
 });
 
 /* ── Drag to reorder / move between quadrants ─────────────────────── */
@@ -636,7 +651,6 @@ document.getElementById('exportBtn').addEventListener('click', () => {
 });
 
 const importFile = document.getElementById('importFile');
-document.getElementById('importBtn').addEventListener('click', () => importFile.click());
 importFile.addEventListener('change', async () => {
   const file = importFile.files[0];
   importFile.value = '';
