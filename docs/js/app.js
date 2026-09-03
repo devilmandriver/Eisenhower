@@ -463,6 +463,7 @@ menuSheet.addEventListener('click', (e) => {
   menuSheet.close();
   if (btn.dataset.menu === 'import') importFile.click();
   else if (btn.dataset.menu === 'export') exportTasks();
+  else if (btn.dataset.menu === 'share') shareTasks();
   else if (btn.dataset.menu === 'deleted') openDeletedDialog();
 });
 
@@ -651,6 +652,29 @@ function exportTasks() {
   URL.revokeObjectURL(url);
 }
 
+/* "Compartir" hands the JSON to Android's native share sheet (Web Share
+ * API, Level 2 — file sharing), so the user can pick Google Drive, a
+ * Drive-synced folder, WhatsApp, email, etc. as the destination, instead
+ * of everything always landing in the Downloads folder like exportTasks()
+ * does. Only shown when the browser actually supports sharing files. */
+let shareFilesSupported = false;
+try {
+  const probe = new File(['x'], 'probe.json', { type: 'application/json' });
+  shareFilesSupported = !!(navigator.canShare && navigator.canShare({ files: [probe] }));
+} catch { /* File/canShare unavailable: leave unsupported */ }
+
+async function shareTasks() {
+  const filename = currentFileName || 'tasks.json';
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const file = new File([blob], filename, { type: 'application/json' });
+  try {
+    await navigator.share({ files: [file], title: 'Eisenhower Matrix' });
+  } catch (err) {
+    if (err && err.name === 'AbortError') return; // user closed the share sheet
+    exportTasks(); // sharing failed for some other reason: fall back to a plain download
+  }
+}
+
 const importFile = document.getElementById('importFile');
 importFile.addEventListener('change', async () => {
   const file = importFile.files[0];
@@ -683,6 +707,7 @@ importFile.addEventListener('change', async () => {
 buildQuadrantSkeleton();
 attachDragHandlers();
 updateFileLabel();
+document.getElementById('shareMenuItem').hidden = !shareFilesSupported;
 render();
 checkDueDates();
 setInterval(checkDueDates, 60_000);
