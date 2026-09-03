@@ -11,6 +11,7 @@ const QUADRANT_META = {
 const QUADRANT_KEYS = Object.keys(QUADRANT_META);
 const STORAGE_KEY = 'eisenhower_state';
 const FONT_KEY = 'eisenhower_font_sizes';
+const FILE_NAME_KEY = 'eisenhower_file_name';
 
 /* ── State ─────────────────────────────────────────────────────────── */
 
@@ -606,14 +607,28 @@ function checkDueDates() {
   }
 }
 
-/* ── Import / Export ──────────────────────────────────────────────── */
+/* ── Open file / Export ───────────────────────────────────────────── */
+/* Mirrors the desktop app's "Open file": pick a tasks.json, load it, and
+ * remember its name (shown in the top bar, like the desktop file_label).
+ * Android Chrome has no File System Access API, so we can't keep a live
+ * writable handle to that file the way the desktop app does — "Abrir
+ * archivo" loads it once into this device's storage, and "Exportar"
+ * re-downloads under the same name so opening it again elsewhere stays
+ * a one-file round trip. */
+
+const fileLabel = document.getElementById('fileLabel');
+let currentFileName = localStorage.getItem(FILE_NAME_KEY) || null;
+
+function updateFileLabel() {
+  fileLabel.textContent = currentFileName ? `Archivo: ${currentFileName}` : 'Datos de este dispositivo';
+}
 
 document.getElementById('exportBtn').addEventListener('click', () => {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'tasks.json';
+  a.download = currentFileName || 'tasks.json';
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -629,7 +644,7 @@ importFile.addEventListener('change', async () => {
   try {
     const text = await file.text();
     const data = JSON.parse(text);
-    if (!confirm('Esto reemplaza las tareas actuales de este dispositivo por las del archivo. ¿Continuar?')) return;
+    if (!confirm(`Esto reemplaza las tareas actuales de este dispositivo por las de "${file.name}". ¿Continuar?`)) return;
     const next = emptyState();
     QUADRANT_KEYS.forEach((k) => {
       if (Array.isArray(data[k])) next[k] = data[k].filter((t) => t != null).map(normalizeTask).filter((t) => t.text);
@@ -640,6 +655,9 @@ importFile.addEventListener('change', async () => {
     state = next;
     saveState();
     render();
+    currentFileName = file.name;
+    localStorage.setItem(FILE_NAME_KEY, currentFileName);
+    updateFileLabel();
   } catch (err) {
     alert('No se pudo leer el archivo JSON: ' + err.message);
   }
@@ -649,6 +667,7 @@ importFile.addEventListener('change', async () => {
 
 buildQuadrantSkeleton();
 attachDragHandlers();
+updateFileLabel();
 render();
 checkDueDates();
 setInterval(checkDueDates, 60_000);

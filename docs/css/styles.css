@@ -38,17 +38,19 @@ body {
 /* ── Top bar ─────────────────────────────────────────── */
 .topbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  height: 52px;
+  gap: 6px 10px;
   min-height: 52px;
-  padding: 0 12px;
+  padding: 8px 12px;
   background: #000;
   border-bottom: 1px solid #111;
 }
-.topbar__icon { width: 22px; height: 22px; border-radius: 5px; }
-.topbar__title { flex: 1; font-size: 16px; font-weight: 700; margin: 0; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar__actions { display: flex; gap: 6px; }
+.topbar__icon { width: 22px; height: 22px; border-radius: 5px; flex: none; }
+.topbar__titles { flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+.topbar__title { font-size: 15px; line-height: 1.25; font-weight: 700; margin: 0; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar__file { font-size: 10px; line-height: 1.3; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar__actions { display: flex; gap: 6px; flex: none; }
 
 .iconbtn {
   height: 32px;

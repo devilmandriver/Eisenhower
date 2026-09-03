@@ -17,9 +17,12 @@
 
 <header class="topbar">
   <img class="topbar__icon" src="icons/icon-192.png" alt="" />
-  <h1 class="topbar__title">Eisenhower Matrix</h1>
+  <div class="topbar__titles">
+    <h1 class="topbar__title">Eisenhower Matrix</h1>
+    <span id="fileLabel" class="topbar__file">Datos de este dispositivo</span>
+  </div>
   <div class="topbar__actions">
-    <button id="importBtn" class="iconbtn" title="Importar JSON" aria-label="Importar">⬆</button>
+    <button id="importBtn" class="iconbtn iconbtn--wide" title="Abrir un archivo tasks.json">Abrir archivo</button>
     <button id="exportBtn" class="iconbtn" title="Exportar JSON" aria-label="Exportar">⬇</button>
     <button id="deletedBtn" class="iconbtn iconbtn--wide" title="Historial de borrados">Borradas</button>
   </div>

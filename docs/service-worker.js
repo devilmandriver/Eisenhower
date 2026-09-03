@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eisenhower-v2';
+const CACHE_NAME = 'eisenhower-v3';
 const APP_SHELL = [
   './',
   './index.html',
