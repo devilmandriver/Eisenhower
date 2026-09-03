@@ -246,7 +246,12 @@ dialog::backdrop { background: rgba(0,0,0,0.55); }
   font-family: inherit; resize: vertical; width: 100%;
 }
 .modal__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-.modal--tall { width: min(92vw, 480px); max-height: 80dvh; display: flex; flex-direction: column; }
+/* `[open]` here matters: an unconditional `display` on a <dialog> class
+   beats the browser's own `dialog:not([open]) { display: none }` default
+   (author styles always win over UA styles, regardless of specificity),
+   which would leave the dialog visible even while closed. */
+.modal--tall { width: min(92vw, 480px); max-height: 80dvh; }
+dialog[open].modal--tall { display: flex; flex-direction: column; }
 
 .deleted-list { overflow-y: auto; flex: 1; min-height: 0; margin: 4px 0; }
 .deleted-item {
