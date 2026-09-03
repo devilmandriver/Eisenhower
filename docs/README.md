@@ -1,6 +1,6 @@
 # Eisenhower Matrix — Android (PWA)
 
-Versión web instalable (Progressive Web App) del [Eisenhower Matrix de escritorio](../main.py). Mismos 4 cuadrantes, etiquetas, notas, fecha límite con paso automático de "Schedule" a "Do First" al vencer, e historial de tareas borradas con opción de reusarlas. Pensada para instalarse en el teléfono desde Chrome, sin pasar por Google Play.
+Versión web instalable (Progressive Web App) del [Eisenhower Matrix de escritorio](../desktop/main.py). Mismos 4 cuadrantes, etiquetas, notas, fecha límite con paso automático de "Schedule" a "Do First" al vencer, e historial de tareas borradas con opción de reusarlas. Pensada para instalarse en el teléfono desde Chrome, sin pasar por Google Play.
 
 Gestos táctiles:
 - **Toca una tarea** → abre el menú (fecha, etiqueta, nota, mover a otro cuadrante, eliminar).
