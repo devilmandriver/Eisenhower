@@ -7,7 +7,7 @@ from PySide6.QtWidgets import (
     QFrame, QMenu, QGraphicsDropShadowEffect, QGridLayout,
     QFileDialog, QDialog, QDialogButtonBox, QTextEdit,
 )
-from PySide6.QtCore import Qt, QRect, QDate, QTimer
+from PySide6.QtCore import Qt, QRect, QPoint, QDate, QTimer
 from PySide6.QtGui import QFont, QColor, QAction, QPixmap, QIcon, QPainter, QBrush
 
 if getattr(sys, "frozen", False):
@@ -251,6 +251,118 @@ class DeletedHistoryDialog(QDialog):
         return None
 
 
+class TaskListWidget(QListWidget):
+    """QListWidget that lets a task be dragged to reorder it within its own
+    quadrant, or dropped onto a different quadrant's list to move it there
+    while keeping its due date, tag and note intact.
+
+    This uses a fully custom, in-app drag (tracked via plain mouse events)
+    instead of Qt's native OS drag-and-drop: this app's frameless window
+    makes the native/OLE drag-and-drop silently fail on Windows (the drag
+    starts but never reports a valid drop target), so we bypass it entirely
+    since we only ever need to drag between our own quadrants, not to other
+    applications.
+    """
+
+    _active_drag_label: QLabel | None = None  # shared across all quadrants; only one drag at a time
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._press_pos: QPoint | None = None
+        self._press_item: QListWidgetItem | None = None
+        self._dragging = False
+
+    @staticmethod
+    def _make_drag_label(text: str) -> QLabel:
+        label = QLabel(text, None)
+        label.setWindowFlags(
+            Qt.WindowType.ToolTip
+            | Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+        )
+        label.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        label.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        label.setStyleSheet("""
+            background: rgba(30, 30, 30, 235); color: #E5E7EB;
+            border: 1px solid #52525B; border-radius: 6px;
+            padding: 6px 12px; font-family: 'Segoe UI'; font-size: 12px;
+        """)
+        label.adjustSize()
+        return label
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._press_pos = event.position().toPoint()
+            self._press_item = self.itemAt(self._press_pos)
+            self._dragging = False
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._press_item is not None and (event.buttons() & Qt.MouseButton.LeftButton):
+            if not self._dragging:
+                moved = (event.position().toPoint() - self._press_pos).manhattanLength()
+                if moved >= QApplication.startDragDistance():
+                    self._dragging = True
+                    TaskListWidget._active_drag_label = self._make_drag_label(self._press_item.text())
+            if self._dragging and TaskListWidget._active_drag_label is not None:
+                global_pos = event.globalPosition().toPoint()
+                TaskListWidget._active_drag_label.move(global_pos + QPoint(14, 14))
+                TaskListWidget._active_drag_label.show()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if self._dragging:
+            self._finish_drag(event.globalPosition().toPoint())
+        self._press_pos = None
+        self._press_item = None
+        self._dragging = False
+        super().mouseReleaseEvent(event)
+
+    def _finish_drag(self, global_pos: QPoint):
+        if TaskListWidget._active_drag_label is not None:
+            TaskListWidget._active_drag_label.hide()
+            TaskListWidget._active_drag_label.deleteLater()
+            TaskListWidget._active_drag_label = None
+
+        target_list = None
+        widget = QApplication.widgetAt(global_pos)
+        while widget is not None:
+            if isinstance(widget, TaskListWidget):
+                target_list = widget
+                break
+            widget = widget.parentWidget()
+        if target_list is None:
+            return  # dropped outside any quadrant list: leave the task where it was
+
+        item = self._press_item
+        old_row = self.row(item)
+        if old_row < 0:
+            return
+
+        drop_row = target_list.indexAt(target_list.viewport().mapFromGlobal(global_pos)).row()
+        if drop_row < 0:
+            drop_row = target_list.count()
+
+        text = item.text()
+        data = item.data(Qt.ItemDataRole.UserRole)
+        tooltip = item.toolTip()
+
+        self.takeItem(old_row)
+        if target_list is self and drop_row > old_row:
+            drop_row -= 1
+
+        new_item = QListWidgetItem(text)
+        new_item.setData(Qt.ItemDataRole.UserRole, data)
+        new_item.setToolTip(tooltip)
+        target_list.insertItem(drop_row, new_item)
+        target_list.setCurrentItem(new_item)
+
+        window = self.window()
+        if hasattr(window, "save_tasks"):
+            window.save_tasks()
+
+
 class QuadrantCard(QFrame):
     _MIN_FONT = 8
     _MAX_FONT = 24
@@ -326,7 +438,7 @@ class QuadrantCard(QFrame):
         hl.addLayout(title_row)
         hl.addWidget(sub_lbl)
 
-        self.list_widget = QListWidget()
+        self.list_widget = TaskListWidget()
         self.list_widget.setStyleSheet(f"""
             QListWidget {{
                 background: #1E1E1E;
@@ -350,13 +462,10 @@ class QuadrantCard(QFrame):
                 background: rgba(255,255,255,0.08);
             }}
         """)
-        self.list_widget.setDragDropMode(QListWidget.DragDropMode.InternalMove)
-        self.list_widget.setDefaultDropAction(Qt.DropAction.MoveAction)
         self.list_widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.list_widget.customContextMenuRequested.connect(self._context_menu)
         self.list_widget.model().rowsInserted.connect(self._refresh_count)
         self.list_widget.model().rowsRemoved.connect(self._refresh_count)
-        self.list_widget.model().rowsMoved.connect(lambda: self.window().save_tasks())
 
         layout.addWidget(header)
         layout.addWidget(self.list_widget, stretch=1)
