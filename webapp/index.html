@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#000000" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Eisenhower Matrix</title>
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <img class="topbar__icon" src="icons/icon-192.png" alt="" />
+  <h1 class="topbar__title">Eisenhower Matrix</h1>
+  <div class="topbar__actions">
+    <button id="importBtn" class="iconbtn" title="Importar JSON" aria-label="Importar">⬆</button>
+    <button id="exportBtn" class="iconbtn" title="Exportar JSON" aria-label="Exportar">⬇</button>
+    <button id="deletedBtn" class="iconbtn iconbtn--wide" title="Historial de borrados">Borradas</button>
+  </div>
+  <input id="importFile" type="file" accept="application/json" hidden />
+</header>
+
+<form id="addForm" class="input-card" autocomplete="off">
+  <input id="taskInput" class="text-input" type="text" placeholder="¿Qué hay que hacer?" required />
+  <div class="input-card__row">
+    <label class="checkbox"><input id="urgentCheck" type="checkbox" /> Urgente</label>
+    <label class="checkbox"><input id="importantCheck" type="checkbox" /> Importante</label>
+    <input id="tagInput" class="text-input text-input--tag" type="text" placeholder="Etiqueta" />
+    <label class="checkbox"><input id="dateCheck" type="checkbox" /> Fecha</label>
+    <input id="dueInput" class="date-input" type="date" disabled />
+    <button type="submit" class="btn btn--primary">Añadir</button>
+  </div>
+</form>
+
+<main id="quadrants" class="quadrants"></main>
+
+<!-- Task action sheet -->
+<dialog id="actionSheet" class="sheet">
+  <div class="sheet__title" id="actionSheetTitle"></div>
+  <button class="sheet__item" data-action="due">Establecer fecha límite…</button>
+  <button class="sheet__item" data-action="due-clear" hidden>Quitar fecha límite</button>
+  <button class="sheet__item" data-action="tag">Editar etiqueta…</button>
+  <button class="sheet__item" data-action="tag-clear" hidden>Quitar etiqueta</button>
+  <button class="sheet__item" data-action="note">Editar nota…</button>
+  <button class="sheet__item" data-action="note-clear" hidden>Quitar nota</button>
+  <div class="sheet__sep"></div>
+  <div class="sheet__label">Mover a</div>
+  <div id="moveTargets"></div>
+  <div class="sheet__sep"></div>
+  <button class="sheet__item sheet__item--danger" data-action="delete">Eliminar tarea</button>
+  <button class="sheet__item sheet__item--cancel" data-action="cancel">Cancelar</button>
+</dialog>
+
+<!-- Due date dialog -->
+<dialog id="dueDialog" class="modal">
+  <h2 class="modal__title">Fecha límite</h2>
+  <input id="dueDialogInput" class="date-input date-input--modal" type="date" />
+  <div class="modal__actions">
+    <button class="btn" data-close="dueDialog">Cancelar</button>
+    <button class="btn btn--primary" id="dueDialogOk">Aceptar</button>
+  </div>
+</dialog>
+
+<!-- Tag dialog -->
+<dialog id="tagDialog" class="modal">
+  <h2 class="modal__title">Etiqueta</h2>
+  <input id="tagDialogInput" class="text-input" type="text" placeholder="Etiqueta" />
+  <div class="modal__actions">
+    <button class="btn" data-close="tagDialog">Cancelar</button>
+    <button class="btn btn--primary" id="tagDialogOk">Aceptar</button>
+  </div>
+</dialog>
+
+<!-- Note dialog -->
+<dialog id="noteDialog" class="modal">
+  <h2 class="modal__title">Nota</h2>
+  <textarea id="noteDialogInput" class="textarea" rows="5" placeholder="Nota"></textarea>
+  <div class="modal__actions">
+    <button class="btn" data-close="noteDialog">Cancelar</button>
+    <button class="btn btn--primary" id="noteDialogOk">Aceptar</button>
+  </div>
+</dialog>
+
+<!-- Deleted history dialog -->
+<dialog id="deletedDialog" class="modal modal--tall">
+  <h2 class="modal__title">Tareas borradas</h2>
+  <div id="deletedList" class="deleted-list"></div>
+  <div class="modal__actions">
+    <button class="btn" data-close="deletedDialog">Cerrar</button>
+  </div>
+</dialog>
+
+<script src="js/app.js"></script>
+</body>
+</html>
