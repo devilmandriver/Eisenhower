@@ -58,19 +58,6 @@ body {
 .topbar__titles { flex: 1 1 140px; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
 .topbar__title { font-size: 15px; line-height: 1.25; font-weight: 700; margin: 0; color: #f8fafc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .topbar__file { font-size: 10px; line-height: 1.3; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.topbar__actions { display: flex; gap: 6px; flex: none; }
-
-.iconbtn {
-  height: 32px;
-  min-width: 32px;
-  padding: 0 8px;
-  background: #090a0d;
-  color: var(--text);
-  border: 1px solid #121316;
-  border-radius: 6px;
-  font-size: 14px;
-}
-.iconbtn:active { background: #07080b; }
 
 /* ── Input card ──────────────────────────────────────── */
 .input-card {

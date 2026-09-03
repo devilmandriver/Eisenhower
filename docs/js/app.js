@@ -461,7 +461,8 @@ menuSheet.addEventListener('click', (e) => {
   const btn = e.target.closest('button[data-menu]');
   if (!btn) return;
   menuSheet.close();
-  if (btn.dataset.menu === 'open-file') importFile.click();
+  if (btn.dataset.menu === 'import') importFile.click();
+  else if (btn.dataset.menu === 'export') exportTasks();
   else if (btn.dataset.menu === 'deleted') openDeletedDialog();
 });
 
@@ -626,10 +627,10 @@ function checkDueDates() {
 /* Mirrors the desktop app's "Open file": pick a tasks.json, load it, and
  * remember its name (shown in the top bar, like the desktop file_label).
  * Android Chrome has no File System Access API, so we can't keep a live
- * writable handle to that file the way the desktop app does — "Abrir
- * archivo" loads it once into this device's storage, and "Exportar"
+ * writable handle to that file the way the desktop app does — "Importar
+ * JSON" loads it once into this device's storage, and "Exportar JSON"
  * re-downloads under the same name so opening it again elsewhere stays
- * a one-file round trip. */
+ * a one-file round trip. Both live in the menu behind the app icon. */
 
 const fileLabel = document.getElementById('fileLabel');
 let currentFileName = localStorage.getItem(FILE_NAME_KEY) || null;
@@ -638,7 +639,7 @@ function updateFileLabel() {
   fileLabel.textContent = currentFileName ? `Archivo: ${currentFileName}` : 'Datos de este dispositivo';
 }
 
-document.getElementById('exportBtn').addEventListener('click', () => {
+function exportTasks() {
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -648,7 +649,7 @@ document.getElementById('exportBtn').addEventListener('click', () => {
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-});
+}
 
 const importFile = document.getElementById('importFile');
 importFile.addEventListener('change', async () => {
