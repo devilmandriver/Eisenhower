@@ -10,7 +10,7 @@ Los datos se guardan en `localStorage`, por lo que **son propios de cada disposi
 
 ## Probarla rápido en el móvil (misma red WiFi)
 
-1. En este PC, dentro de `webapp/`:
+1. En este PC, dentro de `docs/`:
    ```
    python -m http.server 8000
    ```
@@ -25,17 +25,15 @@ Sobre HTTP plano (sin HTTPS) el navegador no ofrece la instalación completa com
 
 ## Publicarla con HTTPS (instalación real, sin Play Store)
 
-El repo ya tiene remoto en GitHub (`devilmandriver/Eisenhower`), así que la vía más simple es **GitHub Pages**:
+El repo ya tiene remoto en GitHub (`devilmandriver/Eisenhower`) y Pages activado sirviendo esta carpeta (`main` / `/docs`, el único subdirectorio que GitHub Pages permite además de la raíz):
 
-1. Sube esta carpeta (pídemelo cuando quieras y hago el commit/push).
-2. En GitHub → repo → **Settings → Pages** → Source: `Deploy from a branch` → Branch: `main`, carpeta `/webapp` (o `/ (root)` si prefieres mover el contenido a `/docs`).
-3. Espera 1-2 min y abre la URL que te da GitHub (algo como `https://devilmandriver.github.io/Eisenhower/`) en Chrome del móvil.
-4. Chrome mostrará el banner **"Instalar app"** automáticamente (o Menú ⋮ → Instalar aplicación). Queda como app nativa: icono propio, pantalla completa, funciona sin conexión.
+1. Abre `https://devilmandriver.github.io/Eisenhower/` en Chrome del móvil.
+2. Chrome mostrará el banner **"Instalar app"** automáticamente (o Menú ⋮ → Instalar aplicación). Queda como app nativa: icono propio, pantalla completa, funciona sin conexión.
 
 ## Estructura
 
 ```
-webapp/
+docs/
   index.html          UI
   css/styles.css       tema oscuro, igual paleta que el escritorio
   js/app.js            lógica: estado, render, drag&drop, diálogos, import/export
