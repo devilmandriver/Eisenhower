@@ -463,7 +463,6 @@ menuSheet.addEventListener('click', (e) => {
   menuSheet.close();
   if (btn.dataset.menu === 'import') importFile.click();
   else if (btn.dataset.menu === 'export') exportTasks();
-  else if (btn.dataset.menu === 'share') shareTasks();
   else if (btn.dataset.menu === 'deleted') openDeletedDialog();
 });
 
@@ -640,39 +639,44 @@ function updateFileLabel() {
   fileLabel.textContent = currentFileName ? `Archivo: ${currentFileName}` : 'Datos de este dispositivo';
 }
 
-function exportTasks() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = currentFileName || 'tasks.json';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/* "Compartir" hands the JSON to Android's native share sheet (Web Share
- * API, Level 2 — file sharing), so the user can pick Google Drive, a
- * Drive-synced folder, WhatsApp, email, etc. as the destination, instead
- * of everything always landing in the Downloads folder like exportTasks()
- * does. Only shown when the browser actually supports sharing files. */
+/* Feature-detect Android's native share sheet (Web Share API, Level 2 —
+ * file sharing) once at load. When supported, "Exportar JSON" hands the
+ * file to it so the user can pick Google Drive, a Drive-synced folder,
+ * WhatsApp, email, etc. as the destination, instead of it always landing
+ * in the Downloads folder. */
 let shareFilesSupported = false;
 try {
   const probe = new File(['x'], 'probe.json', { type: 'application/json' });
   shareFilesSupported = !!(navigator.canShare && navigator.canShare({ files: [probe] }));
 } catch { /* File/canShare unavailable: leave unsupported */ }
 
-async function shareTasks() {
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportTasks() {
   const filename = currentFileName || 'tasks.json';
   const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const file = new File([blob], filename, { type: 'application/json' });
-  try {
-    await navigator.share({ files: [file], title: 'Eisenhower Matrix' });
-  } catch (err) {
-    if (err && err.name === 'AbortError') return; // user closed the share sheet
-    exportTasks(); // sharing failed for some other reason: fall back to a plain download
+
+  if (shareFilesSupported) {
+    const file = new File([blob], filename, { type: 'application/json' });
+    try {
+      await navigator.share({ files: [file], title: 'Eisenhower Matrix' });
+      return;
+    } catch (err) {
+      if (err && err.name === 'AbortError') return; // user closed the share sheet without picking anything
+      // sharing failed for some other reason (e.g. no share target available): fall back to a plain download
+    }
   }
+
+  downloadBlob(blob, filename);
 }
 
 const importFile = document.getElementById('importFile');
@@ -707,7 +711,6 @@ importFile.addEventListener('change', async () => {
 buildQuadrantSkeleton();
 attachDragHandlers();
 updateFileLabel();
-document.getElementById('shareMenuItem').hidden = !shareFilesSupported;
 render();
 checkDueDates();
 setInterval(checkDueDates, 60_000);
